@@ -1,0 +1,442 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+
+import lotus.domino.AgentBase;
+import lotus.domino.Database;
+import lotus.domino.DateTime;
+import lotus.domino.Document;
+import lotus.domino.DocumentCollection;
+import lotus.domino.Session;
+import lotus.domino.View;
+import lotus.domino.ViewEntry;
+import lotus.domino.ViewEntryCollection;
+
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+
+
+public class JavaAgent extends AgentBase {
+
+	public void NotesMain() {
+		System.out.println("===Início do agente 'Dados Zoho'===");
+		try {
+			Session session = getSession();
+			Database db = session.getCurrentDatabase();
+			View vwDadosPessoais = db.getView("ZH_DadosPessoais");
+			View vwConhecimentos = db.getView("ZH_Conhecimentos");
+			View vwCursos = db.getView("ZH_Cursos");
+			View vwExpProfissional = db.getView("ZH_ExpProfissional");
+			View vwFormAcademica = db.getView("ZH_FormAcademica");
+			View vwIdiomas = db.getView("ZH_Idiomas");
+
+			ViewEntryCollection vwColCurriculo = vwDadosPessoais.getAllEntries();
+			ViewEntry entryCurriculo = vwColCurriculo.getFirstEntry();
+			int contPessoas = vwColCurriculo.getCount();
+
+			HSSFWorkbook workbook = new HSSFWorkbook();
+
+			HSSFSheet sheetDadosZ = workbook.createSheet("Dados");
+
+			int cont = 0;
+			int rownum = 0;
+			int cellnum = 0;
+			String id = "";
+			DocumentCollection docs;
+			Document doc;
+
+			Row row = sheetDadosZ.createRow(rownum++);
+			//Criando colunas e seus Títulos;
+			//Criando colunas da visão princial (ZH_Dados_Pessoais)
+			Cell cell = row.createCell(0);
+			cell.setCellValue("id");
+
+			cell = row.createCell(1);
+			cell.setCellValue("Primeiro Nome");
+
+			cell = row.createCell(2);
+			cell.setCellValue("Sobrenome");
+
+			cell = row.createCell(3);
+			cell.setCellValue("E-mail");
+
+			cell = row.createCell(4);
+			cell.setCellValue("CPF");
+
+			cell = row.createCell(5);
+			cell.setCellValue("Data de Nascimento");
+
+			cell = row.createCell(6);
+			cell.setCellValue("Sexo");
+
+			cell = row.createCell(7);
+			cell.setCellValue("Estado Civil");
+
+			cell = row.createCell(8);
+			cell.setCellValue("Endereço");
+
+			cell = row.createCell(9);
+			cell.setCellValue("Codigo Postal");
+
+			cell = row.createCell(10);
+			cell.setCellValue("Complemento");
+
+			cell = row.createCell(11);
+			cell.setCellValue("Bairro");
+
+			cell = row.createCell(12);
+			cell.setCellValue("UF");
+
+			cell = row.createCell(13);
+			cell.setCellValue("Cidade");
+
+			cell = row.createCell(14);
+			cell.setCellValue("Telefone Residencial");
+
+			cell = row.createCell(15);
+			cell.setCellValue("Telefone Celular");
+
+			cell = row.createCell(16);
+			cell.setCellValue("Telefone Recado");
+
+			cell = row.createCell(17);
+			cell.setCellValue("Falar com");
+
+			cell = row.createCell(18);
+			cell.setCellValue("Pretensão salarial");
+
+			cell = row.createCell(19);
+			cell.setCellValue("Disponibilidade para Viagem?");
+
+			cell = row.createCell(20);
+			cell.setCellValue("Area desejada");
+
+			cell = row.createCell(21);
+			cell.setCellValue("Possui necessidade especial?");
+
+			cell = row.createCell(22);
+			cell.setCellValue("Qual Necessidade?");
+
+			cell = row.createCell(23);
+			cell.setCellValue("Outras Necessidades");
+
+			cell = row.createCell(24);
+			cell.setCellValue("Utiliza Acessório?");
+
+			cell = row.createCell(25);
+			cell.setCellValue("Qual Acessório?");
+
+			cell = row.createCell(26);
+			cell.setCellValue("Demais Observações");
+
+			cell = row.createCell(27);
+			cell.setCellValue("Data de Criação");
+
+			//Celulas das View que terão os Campos Unidos:
+			cell = row.createCell(28);
+			cell.setCellValue("Conhecimentos"); //view ZH_Conhecimentos
+
+			cell = row.createCell(29);
+			cell.setCellValue("Cursos"); //view ZH_Cursos
+
+			cell = row.createCell(30);
+			cell.setCellValue("Experiência Profissional"); //view ZH_ExpProfissional
+
+			cell = row.createCell(31);
+			cell.setCellValue("Formação Acadêmica");//view ZH_FormAcademica
+
+			cell = row.createCell(32);
+			cell.setCellValue("Idiomas");//view ZH_Idiomas
+
+			while(entryCurriculo != null) { // While principal, cria e escreve linhas da View principal (ZH_DadosPessoais)
+				cont++;
+				if(true){
+					System.out.println("Gravando curriculo " + cont + " de " + contPessoas);
+					row = sheetDadosZ.createRow(rownum++);	// Criando linhas
+					cellnum = 0;
+					id = (String) entryCurriculo.getColumnValues().get(0); // id une os documentos filhos ao principal
+
+					/***Escrevendo a View Principal:***/
+					cell = row.createCell(cellnum++);//escrevendo o id
+					cell.setCellValue(id);
+
+					cell = row.createCell(cellnum++);//escrevendo o Primeiro Nome
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(1));
+
+					cell = row.createCell(cellnum++);//escrevendo o Sobrenome
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(2));
+
+					cell = row.createCell(cellnum++); //escrevendo o E-mail
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(3));
+
+					cell = row.createCell(cellnum++); //escrevendo o CPF
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(4));
+
+					cell = row.createCell(cellnum++);//escrevendo o Data de Nascimento
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(5));
+
+					cell = row.createCell(cellnum++); //escrevendo o Sexo
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(6));
+
+					cell = row.createCell(cellnum++); //escrevendo o Estado Civil
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(7));
+
+					cell = row.createCell(cellnum++); //escrevendo o Endereço
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(8));
+
+					cell = row.createCell(cellnum++); //escrevendo o Código Postal
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(9));
+
+					cell = row.createCell(cellnum++); //escrevendo o Complemento
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(10));
+
+					cell = row.createCell(cellnum++);//escrevendo o Bairro
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(11));
+
+					cell = row.createCell(cellnum++);//escrevendo o UF
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(12));
+
+					cell = row.createCell(cellnum++);//escrevendo o Cidade
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(13));
+
+					cell = row.createCell(cellnum++);//escrevendo o Telefone Residencial
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(14));
+
+					cell = row.createCell(cellnum++);//escrevendo o Telefone Celular
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(15));
+
+					cell = row.createCell(cellnum++);//escrevendo o Telefone Recado
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(16));
+
+					cell = row.createCell(cellnum++);//escrevendo o Falar com
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(17));
+
+					cell = row.createCell(cellnum++);//escrevendo o Pretensão salarial
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(18));
+
+					cell = row.createCell(cellnum++);//escrevendo o Disponibilidade para Viagem?
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(19));
+
+					cell = row.createCell(cellnum++);//escrevendo o area desejada
+					cell.setCellValue(((entryCurriculo.getColumnValues().get(20)).toString()).replace("[", "").replace("]", ""));
+
+					cell = row.createCell(cellnum++);//escrevendo o Possui necessidade especial?
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(21));
+
+					cell = row.createCell(cellnum++);//escrevendo o Qual Necessidade?
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(22));
+
+					cell = row.createCell(cellnum++);//escrevendo o Outras Necessidades
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(23));
+
+					cell = row.createCell(cellnum++);//escrevendo o Utiliza Acessório?
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(24));
+
+					cell = row.createCell(cellnum++);//escrevendo o Qual Acessório?
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(25));
+
+					cell = row.createCell(cellnum++);//escrevendo o Demais Observações
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(26));
+
+					cell = row.createCell(cellnum++);//escrevendo o Data de Criação
+					cell.setCellValue((String) entryCurriculo.getColumnValues().get(27));
+
+					/***Escrevendo as Views que terão campos unidos:***/
+
+					docs = vwConhecimentos.getAllDocumentsByKey(id); //escrevendo os conhecimentos
+					doc = docs.getFirstDocument();
+					int contadorViewsUnidas = docs.getCount();
+					int contt = 0;
+					String conhecimentos = "";
+
+					while(doc != null){
+						System.out.println("\t"+doc.getUniversalID());
+						contt++;
+						System.out.println("\tGravando conhecimento " + contt + " de " + contadorViewsUnidas);
+						conhecimentos = conhecimentos + doc.getItemValueString("Conhecimento")+" - "+doc.getItemValueString("NivelConhecimento")+"\n";
+						doc = docs.getNextDocument(doc);
+					}
+					cell = row.createCell(cellnum++);
+					cell.setCellValue(conhecimentos);
+					System.out.println("\n");
+
+					//------------------------------------------------------------\\
+					docs = vwCursos.getAllDocumentsByKey(id); //escrevendo os cursos
+					doc = docs.getFirstDocument();
+					contadorViewsUnidas = docs.getCount();
+					contt = 0;
+					String cursos = "";
+					SimpleDateFormat dataSimples = new SimpleDateFormat("dd/MM/yyyy");
+
+					while(doc != null){
+						System.out.println("\t"+doc.getUniversalID());
+						contt++;
+						System.out.println("\tGravando Cursos " + contt + " de " + contadorViewsUnidas);
+
+						if(!doc.getItemValue("DataInicio").isEmpty() && !doc.getItemValue("DataFim").isEmpty()){
+							cursos = cursos + "Curso: " + doc.getItemValueString("NomedoCurso")+ " | Instituição de Ensino: " + doc.getItemValueString("InstituicaodeEnsino") + "\nDescrição: " + doc.getItemValueString("DescricaoCurso")
+							+ "\nDuração: " + doc.getItemValueString("DuracaoCurso")
+							+ " hrs de " + dataSimples.format(((DateTime) doc.getItemValue("DataInicio").get(0)).toJavaDate()) + " a " + dataSimples.format(((DateTime) doc.getItemValue("DataFim").get(0)).toJavaDate()) + "\n---\n" ;
+							doc = docs.getNextDocument(doc);
+						}else if(doc.getItemValue("DataInicio").isEmpty() && doc.getItemValue("DataFim").isEmpty()){
+							cursos = cursos + "Curso: " + doc.getItemValueString("NomedoCurso")+ " | Instituição de Ensino: " + doc.getItemValueString("InstituicaodeEnsino") + "\nDescrição: " + doc.getItemValueString("DescricaoCurso")
+							+ "\nDuração: " + doc.getItemValueString("DuracaoCurso")+" hrs\n---\n" ;
+							doc = docs.getNextDocument(doc);
+						}else if(doc.getItemValue("DataInicio").isEmpty() && !doc.getItemValue("DataFim").isEmpty()){
+							cursos = cursos + "Curso: " + doc.getItemValueString("NomedoCurso")+ " | Instituição de Ensino: " + doc.getItemValueString("InstituicaodeEnsino") + "\nDescrição: " + doc.getItemValueString("DescricaoCurso")
+							+ "\nDuração: " + doc.getItemValueString("DuracaoCurso")
+							+ " hrs de -" + " a " + dataSimples.format(((DateTime) doc.getItemValue("DataFim").get(0)).toJavaDate()) + "\n---\n" ;
+							doc = docs.getNextDocument(doc);
+						}else if(doc.getItemValue("DataFim").isEmpty() && !doc.getItemValue("DataInicio").isEmpty() ){
+							cursos = cursos + "Curso: " + doc.getItemValueString("NomedoCurso")+ " | Instituição de Ensino: " + doc.getItemValueString("InstituicaodeEnsino") + "\nDescrição: " + doc.getItemValueString("DescricaoCurso")
+							+ "\nDuração: " + doc.getItemValueString("DuracaoCurso")
+							+ " hrs de " + dataSimples.format(((DateTime) doc.getItemValue("DataInicio").get(0)).toJavaDate()) +"a -"+ "\n---\n" ;
+							doc = docs.getNextDocument(doc);
+						}
+					}
+					cell = row.createCell(cellnum++);
+					cell.setCellValue(cursos);
+					System.out.println("\n");
+
+					//------------------------------------------------------------\\
+					docs = vwExpProfissional.getAllDocumentsByKey(id); //escrevendo as Experiências Profissonais
+					doc = docs.getFirstDocument();
+					contadorViewsUnidas = docs.getCount();
+					contt = 0;
+					String expProfissional = "";
+
+					while(doc != null){
+						contt++;
+						System.out.println("\t"+doc.getUniversalID());
+
+						System.out.println("\tGravando Experiência " + contt + " de " + contadorViewsUnidas);
+						if(!doc.getItemValue("dataSaida").isEmpty() && !doc.getItemValue("dataEntrada").isEmpty()){
+							expProfissional = expProfissional +"Empresa: "+ doc.getItemValueString("empresa") + " | Cargo: " + doc.getItemValueString("cargo") + " | Funções: " + doc.getItemValueString("funcoesDesempenhadas")
+							+ "\nDe " + dataSimples.format(((DateTime) doc.getItemValue("dataEntrada").get(0)).toJavaDate())+ " a " + dataSimples.format(((DateTime) doc.getItemValue("dataSaida").get(0)).toJavaDate())
+							+"\nTrabalho Atual: " + doc.getItemValueString("trabalhoAtual")+ "\n---\n";
+						}else if(doc.getItemValue("dataSaida").isEmpty() && doc.getItemValue("dataEntrada").isEmpty()){
+							expProfissional = expProfissional +"Empresa: "+ doc.getItemValueString("empresa") + " | Cargo: " + doc.getItemValueString("cargo") + " | Funções: " + doc.getItemValueString("funcoesDesempenhadas")
+							+ doc.getItemValueString("trabalhoAtual")+ "\n---\n";
+						}else if(doc.getItemValue("dataSaida").isEmpty() && !doc.getItemValue("dataEntrada").isEmpty()){
+							expProfissional = expProfissional +"Empresa: "+ doc.getItemValueString("empresa") + " | Cargo: " + doc.getItemValueString("cargo") + " | Funções: " + doc.getItemValueString("funcoesDesempenhadas")
+							+ "\nDe " + dataSimples.format(((DateTime) doc.getItemValue("dataEntrada").get(0)).toJavaDate())+" a - \nTrabalho Atual: " + doc.getItemValueString("trabalhoAtual")+ "\n---\n";
+						}else if(doc.getItemValue("dataEntrada").isEmpty() && !doc.getItemValue("dataSaida").isEmpty()){
+							expProfissional = expProfissional +"Empresa: "+ doc.getItemValueString("empresa") + " | Cargo: " + doc.getItemValueString("cargo") + " | Funções: " + doc.getItemValueString("funcoesDesempenhadas")
+							+ "\nDe - a" + dataSimples.format(((DateTime) doc.getItemValue("dataSaida").get(0)).toJavaDate())+"\nTrabalho Atual: " +doc.getItemValueString("trabalhoAtual")+ "\n---\n";
+						}
+						doc = docs.getNextDocument(doc);
+					}
+
+					cell = row.createCell(cellnum++);
+					cell.setCellValue(expProfissional);
+					System.out.println("\n");
+
+					//------------------------------------------------------------\\
+					docs = vwFormAcademica.getAllDocumentsByKey(id); //escrevendo as Formações Acadêmicas
+					doc = docs.getFirstDocument();
+					contadorViewsUnidas = docs.getCount();
+					contt = 0;
+					String formAcademica = "";
+
+					while(doc != null){
+						System.out.println("\t"+doc.getUniversalID());
+						contt++;
+						System.out.println("\tGravando Formação " + contt + " de " + contadorViewsUnidas);
+
+						if(!doc.getItemValueString("inicio").isEmpty() && !doc.getItemValueString("conclusao").isEmpty() ){
+							formAcademica = formAcademica 
+							+"Grau : "+doc.getItemValue("Nivel").get(0).toString()
+							+" | Status: "+doc.getItemValueString("status")
+							+" | Instituição: "	+doc.getItemValueString("instituicao")
+							+"\nCurso: "+doc.getItemValueString("curso")
+							+" | Horas: "+doc.getItemValueString("cargaHoraria")
+							+" | De: "+doc.getItemValueString("inicio")
+							+" a "+doc.getItemValueString("conclusao")
+							+"\nOutros Cursos: "+doc.getItemValueString("outrosCursos")+"\n---\n"					;
+
+						}else if(doc.getItemValueString("inicio").isEmpty() && doc.getItemValueString("conclusao").isEmpty()){
+							formAcademica = formAcademica 
+							+"Grau : "+doc.getItemValue("Nivel").get(0).toString()
+							+" | Status: "+doc.getItemValueString("status")
+							+" | Instituição: "	+doc.getItemValueString("instituicao")
+							+"\nCurso: "+doc.getItemValueString("curso")
+							+" | Horas: "+doc.getItemValueString("cargaHoraria")
+							+"\nOutros Cursos: "+doc.getItemValueString("outrosCursos")+"\n---\n"					;
+
+						}else if(doc.getItemValueString("inicio").isEmpty() && !doc.getItemValueString("conclusao").isEmpty()){
+							formAcademica = formAcademica 
+							+"Grau : "+doc.getItemValue("Nivel").get(0).toString()
+							+" | Status: "+doc.getItemValueString("status")
+							+" | Instituição: "	+doc.getItemValueString("instituicao")
+							+"\nCurso: "+doc.getItemValueString("curso")
+							+" | Horas: "+doc.getItemValueString("cargaHoraria")
+							+" | De: -"
+							+" a "+doc.getItemValueString("conclusao")
+							+"\nOutros Cursos: "+doc.getItemValueString("outrosCursos")+"\n---\n";
+
+						}else if(doc.getItemValueString("conclusao").isEmpty() && !doc.getItemValueString("inicio").isEmpty()){
+							formAcademica = formAcademica 
+							+"Grau : "+doc.getItemValue("Nivel").get(0).toString()
+							+" | Status: "+doc.getItemValueString("status")
+							+" | Instituição: "	+doc.getItemValueString("instituicao")
+							+"\nCurso: "+doc.getItemValueString("curso")
+							+" | Horas: "+doc.getItemValueString("cargaHoraria")
+							+" | De: "+doc.getItemValueString("inicio")
+							+" a - "
+							+"\nOutros Cursos: "+doc.getItemValueString("outrosCursos")+"\n---\n";
+						}
+						doc = docs.getNextDocument(doc);
+
+					}
+					cell = row.createCell(cellnum++);
+					cell.setCellValue(formAcademica);
+					System.out.println("\n");
+
+					//------------------------------------------------------------\\
+					docs = vwIdiomas.getAllDocumentsByKey(id); //escrevendo os Idiomas
+					doc = docs.getFirstDocument();
+					contadorViewsUnidas = docs.getCount();
+					contt = 0;
+					String idiomas = "";
+
+					while(doc != null){
+						System.out.println("\t"+doc.getUniversalID());
+						contt++;
+						System.out.println("\tGravando Idiomas " + contt + " de " + contadorViewsUnidas);
+						idiomas = idiomas + doc.getItemValueString("Idioma")+" - " +doc.getItemValueString("Nivel") + "\n";
+						doc = docs.getNextDocument(doc);
+					}
+					cell = row.createCell(cellnum++);
+					cell.setCellValue(idiomas);
+					System.out.println("\n");
+
+					//--
+					entryCurriculo = vwColCurriculo.getNextEntry(entryCurriculo);
+				}
+
+				try {
+					FileOutputStream out = new FileOutputStream(new File("C:\\Users\\thales.carvalho\\Documents\\Zoho_Data.xls"));
+					workbook.write(out);
+					out.close();
+					System.out.println("Arquivo Excel criado com sucesso!");
+
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+					System.out.println("Arquivo não encontrado!");
+				} catch (IOException e) {
+					e.printStackTrace();
+					System.out.println("Erro na edição do arquivo!");
+				}
+
+				System.out.println("=======  FIM  do agente 'Dados Zoho' ========");
+
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+}
